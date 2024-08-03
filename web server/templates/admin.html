@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/admin.css">
+    <script src="/static/admin.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制面板</title>
+</head>
+<body>
+	<div class="breadcrumb">您当前的位置：<a href="/">登录</a> > <a href="/profile">主页</a> > <a href="/admin">管理员控制面板</a></div>
+    <div class="container">
+        <h2 class="lang" data-lang="cn">注销用户</h2>
+        
+        <ul id="user-list">
+            <!-- 遍历用户并显示 -->
+            {% for username, user_info in users.items() %}
+                <li>
+                    {{ username }} - {{ user_info.address }}
+                    <button class="delete-btn" onclick="deleteUser('{{ username }}')">删除</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <h2 class="lang" data-lang="cn">添加用户</h2>
+
+        <form id="add-user-form" action="/add_user" method="POST" onsubmit="return validateForm()">
+            <label for="username" class="lang hidden" data-lang="cn">用户名：</label>
+            <input type="text" id="usernameInput" name="username" required>
+            <div id="username-error" class="error-message hidden">用户名至少需要4个字符。</div>
+            <label for="password" class="lang hidden" data-lang="cn">密码：</label>
+            <input type="password" id="password" name="password" required>
+            <div id="password-error" class="error-message hidden">密码需包含至少一个大写字母。</div>
+            <input type="submit" value="添加用户" class="lang" data-lang="cn">
+        </form>
+        <h1 class="lang hidden" data-lang="cn">连接的客户端</h1>
+		<h2>当前处于登陆的用户及IP</h2>
+        <ul id="client-list"></ul>
+        <button id="refresh-btn" onclick="refreshClientList()">刷新客户端</button>
+        
+ <h1>禁止 IP 地址</h1>
+	<form id="banForm">
+		<label for="ipAddress">IP 地址:</label>
+		<input type="text" id="ipAddress" name="ipAddress" required>
+		<br>
+		<label for="banDuration">封禁持续时间（秒）:</label>
+		<input type="number" id="banDuration" name="banDuration" required>
+		<button type="submit">封禁 ip</button>
+	</form>
+	<script>
+	document.getElementById('banForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        let ipAddress = document.getElementById('ipAddress').value;
+        let banDuration = parseInt(document.getElementById('banDuration').value, 10);
+        banIP(ipAddress, banDuration);
+    });
+
+    function banIP(ipAddress, banDuration) {
+        fetch('/ban_ip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ip_address: ipAddress, ban_duration: banDuration })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('错误：无法禁止 IP 地址。');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('message').innerHTML = `<p>${data.message}</p>`;
+        })
+        .catch(error => {
+            console.error('Error banning IP:', error);
+            document.getElementById('message').innerHTML = `<p>Error: ${error.message}</p>`;
+        });
+    }
+
+	</script>
+        <h2 class="lang" data-lang="cn">服务器操作</h2>
+        <form id="shutdown-server-form" action="/shutdown_server" method="POST" onsubmit="return confirm('确定要关闭服务器吗？此操作不可逆。');">
+			 <button type="submit">关闭服务器</button>
+        </form>
+    </div>
+
+    <!-- Scripts and additional logic -->
+</body>
+</html>

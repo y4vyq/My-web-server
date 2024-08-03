@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Form</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #f8f9fa; /* 背景色 */
+      padding-top: 50px; /* 顶部填充 */
+    }
+    .container {
+      background-color: #fff; /* 容器背景色 */
+      border-radius: 10px; /* 边框圆角 */
+      box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1); /* 阴影效果 */
+      padding: 30px; /* 内边距 */
+      max-width: 600px; /* 最大宽度 */
+      margin: auto; /* 自动居中 */
+    }
+    h2 {
+      text-align: center; /* 居中标题 */
+      margin-bottom: 30px; /* 标题下方空间 */
+    }
+    .form-control {
+      border-radius: 5px; /* 输入框圆角 */
+    }
+    .btn-primary {
+      border-radius: 5px; /* 按钮圆角 */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Feedback Form</h2>
+    <form id="feedbackForm" action="/submit-feedback" method="POST">
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" class="form-control" id="username" name="username" required>
+  </div>
+  <div class="form-group">
+    <label for="feedback">Feedback</label>
+    <textarea class="form-control" id="feedback" name="feedback" rows="5" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Feedback</button>
+</form>
+
+  </div>
+
+  <!-- Bootstrap JS (optional) -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+$(document).ready(function() {
+  $('#feedbackForm').submit(function(event) {
+    // 阻止表单的默认提交行为
+    event.preventDefault();
+    
+    // 获取表单数据
+    var formData = {
+      'username': $('#username').val(),
+      'feedback': $('#feedback').val()
+    };
+    
+    // 发送Ajax请求
+    $.ajax({
+      type: 'POST',
+      url: '/submit-feedback', // 替换为你的后端接收数据的URL
+      data: formData,
+      dataType: 'json',
+      encode: true
+    })
+    .done(function(data) {
+      // 处理成功响应
+      console.log(data);
+      // 可以根据需要更新UI或显示成功信息
+      alert('Feedback submitted successfully!');
+    })
+    .fail(function(data) {
+      // 处理失败响应
+      console.error(data);
+      // 可以根据需要显示错误信息
+      alert('Error occurred while submitting feedback.');
+    });
+  });
+});
+</script>
+
+</body>
+</html>

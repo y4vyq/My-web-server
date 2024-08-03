@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <title>y4vyq的个人网站</title>
+    <link rel="stylesheet" href="/static/login.css">
+    <script src="/static/login.js" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <canvas id="myCanvas"></canvas>
+
+        <div class="form-container">
+            <h1 id="title">进行服务器的登录/注册</h1>
+            <div id="login-form">
+                <h2 id="login-heading">登录</h2>
+                <div class="form-group">
+                    <label for="username" id="username-label">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" maxlength="20">
+                    <div class="char-count"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password" id="password-label">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="login-button">登录</button>
+                </div>
+                <p id="register-link-text">还没有账号？<a href="#" id="register-link">点击注册</a></p>
+            </div>
+
+            <div id="register-form" style="display: none;">
+                <h2 id="register-heading">注册</h2>
+                <div class="form-group">
+                    <label for="new-username" id="new-username-label">用户名</label>
+                    <input type="text" id="new-username" placeholder="请输入用户名" maxlength="10">
+                    <div class="char-count"></div>
+                </div>
+                <div class="form-group">
+                    <label for="new-password" id="new-password-label">密码</label>
+                    <input type="password" id="new-password" placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password" id="confirm-password-label">确认密码</label>
+                    <input type="password" id="confirm-password" placeholder="请再次输入密码">
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="register-button">注册</button>
+                </div>
+                <p id="login-link-text">已有账号？<a href="#" id="login-link">点击登录</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

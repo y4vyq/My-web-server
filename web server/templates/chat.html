@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>课堂派-简单好用的互动课堂管理工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+		.container {
+			width: 90%;
+			max-width: 600px;
+			margin: 20px auto;
+			background-color: #fff;
+			border-radius: 5px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+			padding: 20px;
+			overflow: hidden; /* 可选：用于清除浮动 */
+		}
+        
+        h1 {
+            text-align: center;
+            color: #3498db;
+        }
+        
+        #message-container {
+            height: 50vh; /* 使用 vh 单位设置高度 */
+			overflow-y: scroll;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 10px;
+			margin-bottom: 20px;
+        }
+        
+        #message-container p {
+            margin: 0;
+            padding: 5px 0;
+        }
+        
+        #input-container {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%; /* 使用百分比设置宽度 */
+        }
+        
+        #message {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            box-sizing: border-box;
+        }
+        
+        #send-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .disconnected {
+            text-align: center;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .breadcrumb {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }		
+    </style>
+</head>
+<body>
+<div class="app-container">
+<div class="breadcrumb">您当前的位置：<a href="/">登录</a> > <a href="/profile">主页</a> > <a href="/chat">聊天室</a></div>
+    <div class="container">
+        <div id="message-container"></div>
+        <div id="input-container">
+            <input type="text" id="message" placeholder="输入消息...">
+            <button id="send-button">发送</button>
+        </div>
+        <div id="disconnected-message" class="disconnected"></div>
+    </div>
+    <!-- Socket.IO -->
+    <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', () => {
+    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+    var username = "{{username}}"; // 替换为实际的用户名逻辑
+
+    // 当客户端连接时触发
+    socket.on('connect', () => {
+        socket.emit('status', {data: 'Connected'}); // 发送连接状态信息
+    });
+
+    // 当客户端断开连接时触发
+    socket.on('disconnect', () => {
+        socket.emit('status', {data: 'Disconnected'}); // 发送断开连接状态信息
+    });
+
+    // 接收从服务器端发送的消息
+    socket.on('receive_message', function(data) {
+        var messageContainer = document.getElementById('message-container');
+        var messageElement = document.createElement('div');
+        messageElement.classList.add('mb-2');
+
+        // 创建时间戳，格式为 yyyy:mm:dd-hh:mm:ss
+        var timestamp = formatDate(new Date());
+
+        // 构建消息显示的HTML内容
+        messageElement.innerHTML = `<small>${timestamp}</small> <strong>${data.user}:</strong> ${data.msg}`;
+        messageContainer.appendChild(messageElement);
+        messageContainer.scrollTop = messageContainer.scrollHeight; // 滚动到底部
+    });
+
+    var messageInput = document.getElementById('message'); // 获取消息输入框元素
+    var sendButton = document.getElementById('send-button'); // 获取发送按钮元素
+
+    // 点击发送按钮时触发
+    sendButton.onclick = function() {
+        var message = messageInput.value.trim(); // 去除消息前后空白
+
+        // 检查消息是否不为空
+        if (message !== '') {
+            socket.emit('send_message', {user: username, msg: message}); // 发送消息到服务器
+            messageInput.value = ''; // 清空输入框内容
+        }
+    };
+
+    // 将日期对象格式化为 yyyy:mm:dd-hh:mm:ss 格式的函数
+    function formatDate(date) {
+        var yyyy = date.getFullYear();
+        var mm = padNumber(date.getMonth() + 1); // 月份从 0 开始
+        var dd = padNumber(date.getDate());
+        var hh = padNumber(date.getHours());
+        var min = padNumber(date.getMinutes());
+        var ss = padNumber(date.getSeconds());
+        return `${yyyy}:${mm}:${dd}-${hh}:${min}:${ss}`;
+    }
+
+    // 补零函数，用于格式化数字，确保是两位数
+    function padNumber(num) {
+        return (num < 10 ? '0' : '') + num;
+    }
+
+    // 按下回车键发送消息
+    messageInput.addEventListener('keydown', function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            sendButton.click(); // 模拟点击发送按钮
+        }
+    });
+});
+
+</script>
+<script>
+window.addEventListener('resize', function() {
+    // 重新计算需要调整的样式
+    adjustLayout();
+});
+
+function adjustLayout() {
+    // 根据需要调整布局，例如重新计算容器的宽度或高度
+    var container = document.querySelector('.container');
+    container.style.width = window.innerWidth * 0.9 + 'px'; // 示例：设置宽度为窗口宽度的90%
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>在线电影院</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .breadcrumb {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #movieListDiv, #playerDiv {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        #playerDiv {
+
+        }
+        .hidden {
+            display: none;
+        }
+        #movieList {
+            list-style: none;
+            padding: 0;
+        }
+        .movieButton {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .movieButton:hover {
+            background-color: #0056b3;
+        }
+        #backButton {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        #backButton:hover {
+            background-color: #c82333;
+        }
+        video {
+            width: 100%;
+            border-radius: 8px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="breadcrumb">您当前的位置：<a href="/">登录</a> > <a href="/profile">主页</a> > <a href="/cinema">影院</a></div>
+    <h1>我们的影院✅</h1>
+
+    <!-- 显示电影列表的 div -->
+    <div id="movieListDiv">
+        <h2>所有电影：</h2>
+        <ul id="movieList">
+            {% for movie in movies %}
+                <li>
+                    <button class="movieButton" data-src="{{ url_for('movies', filename=movie) }}">{{ movie }}</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="/profile">返回首页</a>
+    </div>
+
+    <!-- 播放电影的 div -->
+    <div id="playerDiv" class="hidden">
+        <h2>正在播放：</h2>
+        <video id="moviePlayer" width="640" height="360" controls>
+            您的浏览器不支持视频标签，请更新您的浏览器或使用支持 HTML5 的浏览器。 
+        </video>
+        <button id="backButton">返回电影列表</button>
+    </div>
+</div>
+
+<!-- 返回电影列表按钮放在这里 -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var movieButtons = document.querySelectorAll(".movieButton");
+        var moviePlayer = document.getElementById("moviePlayer");
+        var movieListDiv = document.getElementById("movieListDiv");
+        var playerDiv = document.getElementById("playerDiv");
+        var backButton = document.getElementById("backButton");
+
+        // 给每个电影按钮添加点击事件
+        movieButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                var movieSrc = button.getAttribute("data-src");
+                moviePlayer.src = movieSrc;
+
+                // 隐藏电影列表，显示播放器
+                movieListDiv.classList.add("hidden");
+                playerDiv.classList.remove("hidden");
+            });
+        });
+
+        // 返回电影列表按钮点击事件
+        backButton.addEventListener("click", function() {
+            // 显示电影列表，隐藏播放器
+            movieListDiv.classList.remove("hidden");
+            playerDiv.classList.add("hidden");
+
+            // 停止视频播放
+            moviePlayer.pause();
+            moviePlayer.currentTime = 0;
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>文件上传和下载</title>
+    <style>
+.container {
+    display: flex;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    position: relative; /* 添加相对定位 */
+}
+
+.file-upload,
+.file-list {
+    flex: 1;
+    margin-right: 20px;
+    position: relative; /* 添加相对定位 */
+}
+.file-list {
+    margin-right: 0; /* 取消右边距 */
+}
+
+.file-upload h2,
+.file-list h2 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.file-upload input[type=file] {
+    display: none;
+}
+
+.upload-btn {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1em;
+}
+
+.upload-btn:hover {
+    background-color: #45a049;
+}
+
+.drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.drop-area.highlight {
+    border-color: #4CAF50;
+}
+
+.file-info {
+    margin-top: 10px;
+    font-size: 0.8em;
+    color: #666;
+}
+
+#uploadProgress {
+    width: 100%;
+    height: 20px;
+    margin-top: 10px;
+}
+
+.file-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.file-list li {
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.download-btn {
+    background-color: #008CBA;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.download-btn:hover {
+    background-color: #0077A3;
+}
+/* 进度条样式 */
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #4caf50;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+  transition: width 0.3s ease; /* 添加过渡效果 */
+}
+
+.progress {
+    width: 50%; /* 示例：设置一个初始的完成度 */
+    height: 100%;
+    background-color: #4CAF50; /* 进度条颜色 */
+    transition: width 0.3s ease; /* 添加过渡效果 */
+}
+
+.progress-text {
+    font-size: 0.9em;
+    color: #333;
+    text-align: center;
+    line-height: 20px;
+    position: relative;
+    z-index: 1; /* 确保文字在进度条上方 */
+}
+.breadcrumb {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #007bff; /* Bootstrap 蓝色 */
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+    </style>
+</head>
+<body>
+    <div class="breadcrumb">您当前的位置：<a href="/">登录</a> > <a href="/profile">主页</a> > <a href="/file">文件上传/下载</a></div>
+<div class="container">
+    <div class="file-upload">
+        <h2>文件上传</h2>
+        <input type="file" id="fileInput" multiple>
+        <div class="drop-area" id="fileDropArea">
+            <p id="fileInfo">将文件拖拽到此处上传</p>
+        </div>
+        <label for="file">完成度：</label>
+        <progress id="uploadProgress" max="100" value="0"></progress>
+        <button class="upload-btn" onclick="uploadFiles()" id="uploadbutton">上传文件</button>
+    </div>
+<hr />
+    <div class="file-list">
+        <h2>文件列表</h2>
+        <ul id="uploadedFiles">
+            <!-- 文件列表将由 JavaScript 动态生成 -->
+        </ul>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const fileDropArea = document.getElementById('fileDropArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileListElement = document.getElementById('uploadedFiles');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    // 文件上传相关逻辑
+    function uploadFiles() {
+        const files = fileInput.files;
+        const formData = new FormData();
+
+        for (const file of files) {
+            formData.append('file', file);
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/file/upload');
+
+        xhr.upload.addEventListener('progress', (e) => {
+            const percent = (e.loaded / e.total) * 100;
+            uploadProgress.value = percent;
+        });
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                listFiles();
+                uploadProgress.value = 0; // 重置进度条
+                fileInfo.textContent = '上传完成'; // 显示上传完成信息
+                setTimeout(() => {
+                    fileInfo.textContent = '将文件拖拽到此处上传'; // 一秒后恢复提示信息
+                }, 1000);
+            } else {
+                console.error('文件上传失败');
+            }
+        };
+
+        xhr.send(formData);
+    }
+
+    // 列出文件列表
+    function listFiles() {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/file/list_files');
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                const files = response.files;
+
+                fileListElement.innerHTML = '';
+
+                files.forEach((file) => {
+                    const li = document.createElement('li');
+                    li.textContent = file;
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = '下载';
+                    downloadBtn.classList.add('download-btn');
+                    downloadBtn.onclick = () => {
+                        window.location = '/file/download/' + encodeURIComponent(file.trim());
+                    };
+
+                    li.appendChild(downloadBtn);
+                    fileListElement.appendChild(li);
+                });
+            } else {
+                console.error('无法获取文件列表');
+            }
+        };
+
+        xhr.send();
+    }
+
+    // 初始化文件列表、进度条和定时刷新
+    listFiles();
+	uploadProgress.value = 0; // 重置进度条
+    setInterval(listFiles, 20000);
+
+    // 拖拽上传相关逻辑
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, () => {
+            fileDropArea.classList.add('highlight');
+            fileInfo.textContent = '释放文件进行上传';
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, () => {
+            fileDropArea.classList.remove('highlight');
+            fileInfo.textContent = '将文件拖拽到此处上传';
+        }, false);
+    });
+
+    fileDropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        fileInput.files = files;
+
+        if (files.length > 0) {
+            fileInfo.textContent = `${files.length} 个文件准备上传`;
+        }
+    }
+</script>
+</body>
+</html>
